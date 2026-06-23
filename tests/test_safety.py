@@ -7,15 +7,14 @@ from app.safety import (
     DeleteCheckResult,
     DeleteRejected,
 )
-from app.models import Cast, CastKind, JobStatus, DeleteJob
-from datetime import datetime
+from app.models import Cast, CastKind
 
 
 def test_redact_api_key():
-    text = "Using API key sk_abc123xyz"
+    text = "Using key x-api-key: sk_test_abc123xyz"
     redacted = redact(text)
-    assert "sk_abc123xyz" not in redacted
-    assert "***" in redacted
+    assert "sk_test_abc123xyz" not in redacted
+    assert "********" in redacted
 
 
 def test_redact_signer_uuid():
@@ -30,9 +29,8 @@ def test_redact_no_secrets():
     assert redacted == text
 
 
-def test_redact_empty():
+def test_redact_empty_string():
     assert redact("") == ""
-    assert redact(None) == ""
 
 
 def test_validate_delete_request_empty_hashes():

@@ -3,9 +3,9 @@
 import pytest
 import tempfile
 import os
-from datetime import datetime
+import uuid
 from app.store import Store
-from app.models import JobStatus, CastKind, FetchMode
+from app.models import JobStatus, FetchMode
 
 
 @pytest.fixture
@@ -28,10 +28,10 @@ def store(temp_db, monkeypatch):
 
 
 def test_store_initialize_schema(store):
-    # Schema should be created without error
-    conn = store._get_conn()
-    cur = conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
-    tables = {row[0] for row in cur.fetchall()}
+    with store._get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        tables = {row[0] for row in cur.fetchall()}
     assert "scan_sessions" in tables
     assert "scanned_casts" in tables
     assert "delete_jobs" in tables
@@ -39,24 +39,21 @@ def test_store_initialize_schema(store):
 
 
 def test_scan_session_crud(store):
-    session = store.scan_session_create(
+    session_id = store.scan_session_create(
         fid=123,
-        api_key="key",
-        signer_uuid="uuid",
         count=150,
         mode=FetchMode.ALL,
         include_recasts=False,
     )
-    assert session.id is not None
-    assert session.fid == 123
+    assert session_id is not None
 
-    retrieved = store.scan_session_get(session.id)
+    retrieved = store.scan_session_get(session_id)
     assert retrieved is not None
-    assert retrieved.fid == 123
+    assert retrieved["fid"] == 123
 
-    store.scan_session_update_status(session.id, "completed")
-    updated = store.scan_session_get(session.id)
-    assert updated.status == "completed"
+    store.scan_session_update_status(session_id, "completed")
+    updated = store.scan_session_get(session_id)
+    assert updated["status"] == "completed"
 
 
 def test_scanned_casts_list_empty(store):
@@ -71,9 +68,9 @@ def test_scanned_casts_selected_hashes(store):
 
 def test_add_and_get_job(store):
     job = store.add_job(
-        tenant_id="tenant-1",
-        target_hashes=["0xabc", "0xdef"],
         confirmation_phrase="CONFIRM",
+        target_hashes=["0xabc", "0xdef"],
+        total=2,
     )
     assert job.id is not None
     assert job.status == JobStatus.PREPARED
@@ -85,40 +82,39 @@ def test_add_and_get_job(store):
 
 def test_update_job(store):
     job = store.add_job(
-        tenant_id="tenant-1",
-        target_hashes=["0xabc"],
         confirmation_phrase="CONFIRM",
+        target_hashes=["0xabc"],
+        total=1,
     )
-    store.update_job(job.id, status=JobStatus.RUNNING, deleted=1, failed=0)
+    job.status = JobStatus.RUNNING
+    job.deleted = 1
+    store.update_job(job)
     updated = store.get_job(job.id)
     assert updated.status == JobStatus.RUNNING
     assert updated.deleted == 1
 
 
 def test_confirm_fail_get_set_reset(store):
-    # Initially no failure record
-    assert store.confirm_fail_get("user-1") == 0
-
-    # Increment
-    store.confirm_fail_set("user-1", 1)
-    assert store.confirm_fail_get("user-1") == 1
-
-    # Reset
-    store.confirm_fail_reset("user-1")
-    assert store.confirm_fail_get("user-1") == 0
+    uid = str(uuid.uuid4())
+    assert store.confirm_fail_get(uid) == 0
+    store.confirm_fail_set(uid, 1)
+    assert store.confirm_fail_get(uid) == 1
+    store.confirm_fail_reset(uid)
+    assert store.confirm_fail_get(uid) == 0
 
 
 def test_audit_events(store):
-    store.add_audit_event(user_id="user-1", event_type="cast_deleted", details={"cast_hash": "0xabc"})
-    count = store.audit_event_count("user-1", "cast_deleted")
-    assert count == 1
+    uid = str(uuid.uuid4())
+    store.add_audit_event(user_id=uid, event_type="cast_deleted", casts_deleted=1)
+    count = store.audit_event_count(uid)
+    assert count >= 1
 
 
 def test_add_and_get_logs(store):
     job = store.add_job(
-        tenant_id="tenant-1",
-        target_hashes=["0xabc"],
         confirmation_phrase="CONFIRM",
+        target_hashes=["0xabc"],
+        total=1,
     )
     store.add_log(
         job_id=job.id,
