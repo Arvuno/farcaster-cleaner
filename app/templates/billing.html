@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Billing - Far caster Cleaner{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/dashboard.css">
+{% endblock %}
+
+{% block content %}
+<h1>Billing</h1>
+<p>Manage your subscription and billing information.</p>
+
+<div class="billing-card">
+    <h2>Current Plan</h2>
+    <div class="plan-info">
+        <span class="plan-name">{{ plan_name or 'Free Tier' }}</span>
+        <span class="plan-price">{{ plan_price or '$0/mo' }}</span>
+    </div>
+    <ul class="plan-features">
+        <li>{{ casts_limit or 50 }} casts per month</li>
+        <li>Basic filters</li>
+        <li>Email support</li>
+    </ul>
+</div>
+
+<div class="billing-card">
+    <h2>Upgrade to Pro</h2>
+    <div class="plan-info">
+        <span class="plan-name">Pro Plan</span>
+        <span class="plan-price">$9.99/mo</span>
+    </div>
+    <ul class="plan-features">
+        <li>Unlimited casts</li>
+        <li>Advanced filters</li>
+        <li>Priority support</li>
+        <li>API access</li>
+        <li>Multiple accounts</li>
+    </ul>
+    <form action="/billing/checkout" method="post">
+        <button type="submit" class="btn btn-primary">Upgrade Now</button>
+    </form>
+</div>
+
+<div class="billing-card">
+    <h2>Billing Portal</h2>
+    <p style="color: var(--text-muted);">View invoices, update payment method, or cancel your subscription.</p>
+    <form action="/billing/portal" method="post">
+        <button type="submit" class="btn">Open Billing Portal</button>
+    </form>
+</div>
+
+{% if invoices %}
+<div class="billing-card">
+    <h2>Invoice History</h2>
+    <table class="activity-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Download</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for invoice in invoices %}
+            <tr>
+                <td>{{ invoice.date }}</td>
+                <td>{{ invoice.amount }}</td>
+                <td><span class="badge {{ invoice.status }}">{{ invoice.status }}</span></td>
+                <td><a href="{{ invoice.url }}" class="btn-small">PDF</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

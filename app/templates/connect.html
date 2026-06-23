@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Connect FARCASTER - Far caster Cleaner{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/dashboard.css">
+{% endblock %}
+
+{% block content %}
+<h1>Connect Your FARCASTER Account</h1>
+<p>Link your FARCASTER identity to start managing your casts.</p>
+
+<div class="connect-card">
+    <div style="text-align: center; margin-bottom: 1.5rem;">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="32" cy="32" r="32" fill="#8B5CF6"/>
+            <path d="M32 16C22.059 16 14 24.059 14 34C14 43.941 22.059 52 32 52C41.941 52 50 43.941 50 34C50 24.059 41.941 16 32 16ZM26 28V42L39 35L26 28Z" fill="white"/>
+        </svg>
+    </div>
+    <h2 style="text-align: center;">Sign in with Neynar</h2>
+    <p style="text-align: center; color: var(--text-muted);">
+        Use Sign-In With Neynar (SIWN) to securely connect your FARCASTER account.
+    </p>
+
+    <div style="text-align: center; margin-top: 1.5rem;">
+        <button id="connect-btn" class="btn btn-primary">Connect with FARCASTER</button>
+    </div>
+
+    <div id="status-message" class="status-message" style="display: none;"></div>
+</div>
+
+<div class="info-box card">
+    <h3>Why connect?</h3>
+    <ul style="color: var(--text-muted); padding-left: 1.5rem;">
+        <li>Manage your casts directly from the dashboard</li>
+        <li>Schedule automatic cleanups</li>
+        <li>View analytics for your content</li>
+        <li>Secure authentication without sharing passwords</li>
+    </ul>
+</div>
+
+{% if connected_accounts %}
+<div class="card">
+    <h2>Connected Accounts</h2>
+    {% for account in connected_accounts %}
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid var(--border);">
+        <div>
+            <strong>{{ account.username }}</strong>
+            <span style="color: var(--text-muted);"> (FID: {{ account.fid }})</span>
+        </div>
+        <div>
+            {% if account.is_primary %}
+                <span class="badge active">Primary</span>
+            {% endif %}
+            <button class="btn-small">Disconnect</button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('connect-btn').addEventListener('click', async function() {
+    const btn = this;
+    btn.disabled = true;
+    btn.textContent = 'Connecting...';
+
+    try {
+        const response = await fetch('/connect/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'start' })
+        });
+        const data = await response.json();
+
+        if (data.url) {
+            window.location.href = data.url;
+        } else if (data.message) {
+            const statusEl = document.getElementById('status-message');
+            statusEl.textContent = data.message;
+            statusEl.style.display = 'block';
+            statusEl.className = 'status-message ' + (data.success ? 'success' : 'error');
+            btn.disabled = false;
+            btn.textContent = 'Connect with FARCASTER';
+        }
+    } catch (err) {
+        const statusEl = document.getElementById('status-message');
+        statusEl.textContent = 'Connection failed. Please try again.';
+        statusEl.style.display = 'block';
+        statusEl.className = 'status-message error';
+        btn.disabled = false;
+        btn.textContent = 'Connect with FARCASTER';
+    }
+});
+</script>
+{% endblock %}

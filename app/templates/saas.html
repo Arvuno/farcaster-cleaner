@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}SaaS Dashboard - Far caster Cleaner{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/saas.css">
+<link rel="stylesheet" href="/static/dashboard.css">
+{% endblock %}
+
+{% block content %}
+<h1>SaaS Dashboard</h1>
+<p>Welcome back, {{ username }}!</p>
+
+<div class="saas-grid">
+    <div class="saas-card">
+        <h3>Monthly Usage</h3>
+        <div class="quota-gauge">
+            <div class="usage-bar">
+                <div class="usage-fill" style="width: {{ usage_percent or 0 }}%"></div>
+            </div>
+            <div class="quota-labels">
+                <span>{{ usage_count or 0 }} casts</span>
+                <span>{{ usage_limit or 100 }} limit</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="saas-card">
+        <h3>Subscription</h3>
+        <p class="plan-badge">{{ subscription_tier or 'Free' }}</p>
+        <p style="color: var(--text-muted);">${{ monthly_price or 0 }}/month</p>
+        <a href="/billing" class="btn-small">Manage</a>
+    </div>
+
+    <div class="saas-card">
+        <h3>API Calls</h3>
+        <p class="stat-large">{{ api_calls or 0 }}</p>
+        <p>this month</p>
+    </div>
+
+    <div class="saas-card">
+        <h3>Data Storage</h3>
+        <p class="stat-large">{{ storage_used or '0 MB' }}</p>
+        <p>of {{ storage_limit or '100 MB' }} used</p>
+    </div>
+</div>
+
+<div class="saas-section">
+    <h2>Usage Statistics</h2>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Total Casts Deleted</h3>
+            <p class="stat-value">{{ total_deleted or 0 }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>This Month</h3>
+            <p class="stat-value">{{ this_month or 0 }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Success Rate</h3>
+            <p class="stat-value">{{ success_rate or 100 }}%</p>
+        </div>
+        <div class="stat-card">
+            <h3>Avg Response Time</h3>
+            <p class="stat-value">{{ avg_response or 0 }}ms</p>
+        </div>
+    </div>
+</div>
+
+<div class="saas-section">
+    <h2>Recent Activity</h2>
+    <table class="activity-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Action</th>
+                <th>Casts</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if recent_activity %}
+                {% for activity in recent_activity %}
+                <tr>
+                    <td>{{ activity.date }}</td>
+                    <td>{{ activity.action }}</td>
+                    <td>{{ activity.casts }}</td>
+                    <td><span class="badge {{ activity.status }}">{{ activity.status }}</span></td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="4" style="text-align: center; color: var(--text-muted);">No recent activity</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+<div class="export-section">
+    <div>
+        <h2>Export Data</h2>
+        <p style="color: var(--text-muted); margin: 0;">Download your usage data and history</p>
+    </div>
+    <form action="/saas/stats/export" method="post">
+        <button type="submit" class="btn">Export as CSV</button>
+    </form>
+</div>
+{% endblock %}

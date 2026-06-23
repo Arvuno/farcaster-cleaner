@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Far caster Cleaner{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/home.css">
+{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1>Clean Your FARCASTER History</h1>
+    <p>Find and delete unwanted casts, replies, and recasts from your FARCASTER account with ease.</p>
+    <div class="hero-buttons">
+        <a href="/auth/register" class="btn btn-primary">Get Started</a>
+        <a href="/auth/login" class="btn">Login</a>
+    </div>
+</div>
+
+<div class="features-grid">
+    <div class="feature-card">
+        <div class="feature-icon">🗑️</div>
+        <h3>Bulk Delete</h3>
+        <p>Select and delete multiple casts at once. Save time with batch operations.</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <h3>Smart Filters</h3>
+        <p>Filter by type - root casts, replies, or recasts. Find exactly what you need.</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Analytics</h3>
+        <p>View your posting history and engagement metrics at a glance.</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>Secure</h3>
+        <p>Your credentials are encrypted and never stored in plain text.</p>
+    </div>
+</div>
+
+<div class="how-it-works">
+    <h2>How It Works</h2>
+    <div class="steps">
+        <div class="step">
+            <div class="step-number">1</div>
+            <h4>Connect</h4>
+            <p>Link your FARCASTER account using Sign-In With Neynar.</p>
+        </div>
+        <div class="step">
+            <div class="step-number">2</div>
+            <h4>Scan</h4>
+            <p>Fetch your casts and select the ones you want to delete.</p>
+        </div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <h4>Delete</h4>
+            <p>Review and delete selected casts securely.</p>
+        </div>
+    </div>
+</div>
+
+<div class="pricing-grid">
+    <div class="pricing-card">
+        <h3>Free</h3>
+        <div class="pricing-amount">$0<span>/month</span></div>
+        <ul>
+            <li>50 casts per month</li>
+            <li>Basic filters</li>
+            <li>Email support</li>
+        </ul>
+        <a href="/auth/register" class="btn">Get Started</a>
+    </div>
+    <div class="pricing-card featured">
+        <h3>Pro</h3>
+        <div class="pricing-amount">$9.99<span>/month</span></div>
+        <ul>
+            <li>Unlimited casts</li>
+            <li>Advanced filters</li>
+            <li>Priority support</li>
+            <li>API access</li>
+        </ul>
+        <a href="/billing" class="btn btn-primary">Upgrade Now</a>
+    </div>
+</div>
+
+<div class="cta-section">
+    <h2>Ready to Clean Up Your History?</h2>
+    <p>Join thousands of FARCASTER users who keep their profiles tidy.</p>
+    <a href="/auth/register" class="btn btn-primary">Create Free Account</a>
+</div>
+{% endblock %}

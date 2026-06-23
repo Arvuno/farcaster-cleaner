@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action|title }} - Far caster Cleaner{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/auth.css">
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <svg class="auth-logo" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="32" cy="32" r="32" fill="#8B5CF6"/>
+                <path d="M32 16C22.059 16 14 24.059 14 34C14 43.941 22.059 52 32 52C41.941 52 50 43.941 50 34C50 24.059 41.941 16 32 16ZM26 28V42L39 35L26 28Z" fill="white"/>
+            </svg>
+            <h1 class="auth-title">{{ action|title }}</h1>
+            <p class="auth-subtitle">{% if action == 'login' %}Welcome back!{% else %}Create your account{% endif %}</p>
+        </div>
+
+        {% if error %}
+        <div class="error-message">{{ error }}</div>
+        {% endif %}
+
+        <form class="auth-form" method="post">
+            {% if action == 'register' %}
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+
+            <button type="submit" class="btn">{{ action|title }}</button>
+        </form>
+
+        <div class="auth-divider">
+            <span>or continue with</span>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="/auth/farcaster" class="btn" style="background: #8B5CF6;">
+                FARCASTER (SIWN)
+            </a>
+        </div>
+
+        <div class="auth-footer">
+            {% if action == 'login' %}
+                <p>Don't have an account? <a href="/auth/register">Register</a></p>
+            {% else %}
+                <p>Already have an account? <a href="/auth/login">Login</a></p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

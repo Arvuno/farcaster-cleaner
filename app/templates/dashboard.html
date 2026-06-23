@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Far caster Cleaner{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/dashboard.css">
+{% endblock %}
+
+{% block content %}
+<h1>Dashboard</h1>
+<p>Welcome back, {{ username }}!</p>
+
+<div class="dashboard-grid">
+    <div class="dashboard-card">
+        <h3>Connected Accounts</h3>
+        <p class="stat-value">{{ connected_accounts or 0 }}</p>
+        <a href="/connect" class="btn btn-small">Manage</a>
+    </div>
+    <div class="dashboard-card">
+        <h3>Total Casts Deleted</h3>
+        <p class="stat-value">{{ total_deleted or 0 }}</p>
+    </div>
+    <div class="dashboard-card">
+        <h3>Active Jobs</h3>
+        <p class="stat-value">{{ active_jobs or 0 }}</p>
+    </div>
+    <div class="dashboard-card">
+        <h3>This Month</h3>
+        <p class="stat-value">{{ this_month_deletes or 0 }}</p>
+        <p class="stat-label">casts deleted</p>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Quick Actions</h2>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <a href="/delete" class="btn btn-primary">Delete Casts</a>
+        <a href="/connect" class="btn">Connect Account</a>
+        <a href="/saas/stats" class="btn">View Stats</a>
+        <a href="/billing" class="btn">Manage Subscription</a>
+    </div>
+</div>
+
+{% if recent_jobs %}
+<div class="card">
+    <h2>Recent Jobs</h2>
+    <table class="activity-table">
+        <thead>
+            <tr>
+                <th>Job ID</th>
+                <th>Date</th>
+                <th>Casts</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for job in recent_jobs %}
+            <tr>
+                <td><a href="/delete/{{ job.id }}">{{ job.id[:8] }}...</a></td>
+                <td>{{ job.created_at }}</td>
+                <td>{{ job.total }}</td>
+                <td><span class="badge {{ job.status }}">{{ job.status }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

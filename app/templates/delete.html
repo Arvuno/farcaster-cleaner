@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Casts - Far caster Cleaner{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/dashboard.css">
+{% endblock %}
+
+{% block content %}
+<h1>Delete Casts</h1>
+<p>Select the casts you want to delete from your FARCASTER account.</p>
+
+<div class="delete-form">
+    <form id="fetch-form">
+        <div class="form-group">
+            <label for="count">Number of casts to fetch:</label>
+            <input type="number" id="count" name="count" value="150" min="1" max="1000">
+        </div>
+
+        <div class="form-group">
+            <label for="mode">Filter mode:</label>
+            <select id="mode" name="mode">
+                <option value="all">All casts</option>
+                <option value="root_only">Root casts only</option>
+                <option value="replies_only">Replies only</option>
+            </select>
+        </div>
+
+        <div class="form-group checkbox">
+            <label>
+                <input type="checkbox" id="include_recasts" name="include_recasts">
+                Include recasts
+            </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Fetch Casts</button>
+    </form>
+</div>
+
+<div id="casts-list" class="casts-list" style="display: none;">
+    <h2>Select Casts to Delete</h2>
+    <div id="casts-container"></div>
+    <div style="margin-top: 1rem;">
+        <button id="delete-selected" class="btn btn-danger" disabled>Delete Selected</button>
+        <span id="selected-count" style="margin-left: 1rem; color: var(--text-muted);"></span>
+    </div>
+</div>
+
+<div id="loading" class="loading" style="display: none;">
+    <p>Loading casts...</p>
+</div>
+
+<div id="error-message" class="error-message" style="display: none;"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('fetch-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const count = document.getElementById('count').value;
+    const mode = document.getElementById('mode').value;
+    const includeRecasts = document.getElementById('include_recasts').checked;
+
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('casts-list').style.display = 'none';
+    document.getElementById('error-message').style.display = 'none';
+
+    try {
+        const response = await fetch('/api/fetch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ count: parseInt(count), mode, include_recasts: includeRecasts })
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch casts');
+
+        const data = await response.json();
+        displayCasts(data.casts);
+    } catch (err) {
+        document.getElementById('error-message').textContent = err.message;
+        document.getElementById('error-message').style.display = 'block';
+    } finally {
+        document.getElementById('loading').style.display = 'none';
+    }
+});
+
+function displayCasts(casts) {
+    const container = document.getElementById('casts-container');
+    container.innerHTML = casts.map((cast, i) => `
+        <div class="cast-item">
+            <input type="checkbox" class="cast-checkbox" data-hash="${cast.hash}">
+            <div class="cast-content">
+                <p class="cast-text">${escapeHtml(cast.text || '')}</p>
+                <p class="cast-meta">${cast.timestamp || 'Unknown time'} | ${cast.kind || 'unknown'}</p>
+            </div>
+        </div>
+    `).join('');
+
+    container.querySelectorAll('.cast-checkbox').forEach(cb => {
+        cb.addEventListener('change', updateSelectedCount);
+    });
+
+    document.getElementById('casts-list').style.display = 'block';
+}
+
+function updateSelectedCount() {
+    const checked = document.querySelectorAll('.cast-checkbox:checked').length;
+    document.getElementById('selected-count').textContent = `${checked} selected`;
+    document.getElementById('delete-selected').disabled = checked === 0;
+}
+
+document.getElementById('delete-selected').addEventListener('click', async function() {
+    const selected = Array.from(document.querySelectorAll('.cast-checkbox:checked'))
+        .map(cb => cb.dataset.hash);
+
+    if (!confirm(`Delete ${selected.length} casts? This cannot be undone.`)) return;
+
+    try {
+        const response = await fetch('/api/prepare-delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ target_hashes: selected })
+        });
+
+        if (!response.ok) throw new Error('Failed to prepare delete');
+
+        const data = await response.json();
+        window.location.href = `/delete/${data.job_id}`;
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+});
+</script>
+{% endblock %}

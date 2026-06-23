@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Job {{ job_id }} - Far caster Cleaner{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/dashboard.css">
+{% endblock %}
+
+{% block content %}
+<h1>Delete Job Status</h1>
+<p>Job ID: <code>{{ job_id }}</code></p>
+
+<div class="job-status-card">
+    <div class="job-header">
+        <span class="job-id">Job ID: {{ job_id[:8] }}...</span>
+        <span class="job-status-badge {{ status or 'running' }}">{{ status or 'running' }}</span>
+    </div>
+
+    <div class="progress-section">
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ progress or 0 }}%"></div>
+        </div>
+        <div class="progress-stats">
+            <span>Deleted: {{ deleted or 0 }}/{{ total or 0 }}</span>
+            <span>Failed: {{ failed or 0 }}</span>
+            <span>Skipped: {{ skipped or 0 }}</span>
+        </div>
+    </div>
+
+    {% if status == 'prepared' %}
+    <div style="margin-top: 1rem;">
+        <p style="color: var(--warning);">⚠️ Please confirm deletion by typing the phrase below.</p>
+        <form action="/delete/{{ job_id }}/confirm" method="post" style="margin-top: 1rem;">
+            <div class="form-group">
+                <label for="phrase">Confirmation phrase: <strong>{{ confirmation_phrase }}</strong></label>
+                <input type="text" id="phrase" name="phrase" required>
+            </div>
+            <button type="submit" class="btn btn-danger">Confirm & Delete</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <div class="job-actions">
+        {% if status == 'running' %}
+        <form action="/delete/{{ job_id }}/cancel" method="post">
+            <button type="submit" class="btn btn-danger">Cancel Job</button>
+        </form>
+        {% endif %}
+        <a href="/dashboard" class="btn">Back to Dashboard</a>
+    </div>
+</div>
+
+{% if logs %}
+<div class="logs-section">
+    <h2>Activity Log</h2>
+    <div class="log-entries">
+        {% for log in logs %}
+        <p class="log-entry">[{{ log.timestamp }}] {{ log.message }}</p>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if status == 'completed' or status == 'failed' %}
+<div class="card" style="margin-top: 1.5rem;">
+    <h2>Job Summary</h2>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; text-align: center;">
+        <div>
+            <p class="stat-value" style="color: var(--success);">{{ deleted or 0 }}</p>
+            <p>Deleted</p>
+        </div>
+        <div>
+            <p class="stat-value" style="color: var(--danger);">{{ failed or 0 }}</p>
+            <p>Failed</p>
+        </div>
+        <div>
+            <p class="stat-value" style="color: var(--warning);">{{ skipped or 0 }}</p>
+            <p>Skipped</p>
+        </div>
+    </div>
+    <div style="margin-top: 1.5rem; text-align: center;">
+        <a href="/delete" class="btn btn-primary">Start New Delete</a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-refresh for running jobs
+{% if status == 'running' %}
+setTimeout(() => {
+    window.location.reload();
+}, 5000);
+{% endif %}
+</script>
+{% endblock %}

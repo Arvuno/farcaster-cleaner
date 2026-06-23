@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - Far caster Cleaner{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/dashboard.css">
+{% endblock %}
+
+{% block content %}
+<h1>Admin Dashboard</h1>
+<p>Welcome, {{ username }}!</p>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <h3>Total Users</h3>
+        <p class="stat-value">{{ total_users or 0 }}</p>
+    </div>
+    <div class="stat-card">
+        <h3>Active Jobs</h3>
+        <p class="stat-value">{{ active_jobs or 0 }}</p>
+    </div>
+    <div class="stat-card">
+        <h3>Revenue (MRR)</h3>
+        <p class="stat-value">${{ revenue or 0 }}</p>
+    </div>
+    <div class="stat-card">
+        <h3>System Status</h3>
+        <p class="stat-value">
+            <span class="badge success">Operational</span>
+        </p>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Quick Actions</h2>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <a href="/admin/users" class="btn">Manage Users</a>
+        <a href="/admin/jobs" class="btn">View All Jobs</a>
+        <a href="/admin/config" class="btn">System Config</a>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Recent Activity</h2>
+    <table class="activity-table">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>User</th>
+                <th>Action</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if recent_activity %}
+                {% for activity in recent_activity %}
+                <tr>
+                    <td>{{ activity.time }}</td>
+                    <td>{{ activity.user }}</td>
+                    <td>{{ activity.action }}</td>
+                    <td>{{ activity.details }}</td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="4" style="text-align: center; color: var(--text-muted);">No recent activity</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

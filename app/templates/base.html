@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Far caster Cleaner{% endblock %}</title>
+    <link rel="stylesheet" href="/static/app.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="nav">
+        <a href="/">Home</a>
+        {% if user_id %}
+            <a href="/dashboard">Dashboard</a>
+            <a href="/delete">Delete</a>
+            <a href="/connect">Connect</a>
+            <a href="/saas/dashboard">SaaS</a>
+            <a href="/billing">Billing</a>
+            {% if is_admin %}
+                <a href="/admin">Admin</a>
+            {% endif %}
+            <a href="/auth/logout">Logout</a>
+        {% else %}
+            <a href="/auth/login">Login</a>
+            <a href="/auth/register">Register</a>
+        {% endif %}
+    </nav>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Far caster Cleaner. All rights reserved.</p>
+    </footer>
+
+    <script src="/static/app.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
